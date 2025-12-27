@@ -4,15 +4,15 @@ Node.js Express API for CSV file operations with MongoDB integration. Supports C
 
 ## Features
 
-- ✅ Read and display all CSV data
-- ✅ Search/filter CSV rows by query parameters
-- ✅ Update CSV rows dynamically
-- ✅ Delete CSV rows by criteria
-- ✅ Add new columns to CSV
-- ✅ Delete columns from CSV
-- ✅ Import CSV data into MongoDB
-- ✅ REST API with Express.js
-- ✅ MongoDB integration with Mongoose
+-  Read and display all CSV data
+-  Search/filter CSV rows by query parameters
+-  Update CSV rows 
+-  Delete CSV rows 
+-  Add new columns to CSV
+-  Delete columns from CSV
+-  Import CSV data into MongoDB
+-  REST API with Express.js
+-  MongoDB integration with Mongoose
 
 ## Project Structure
 
