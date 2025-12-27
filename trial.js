@@ -7,17 +7,16 @@ app.use(express.json());
 const Value = require('./models/values.model');
 const { readCsv, writeCsv } = require('./csvService');
 
-// ---------- Helper for CSV filtering ----------
 function matchesQuery(row, query) {
   return Object.keys(query).every(key => row[key] === query[key]);
 }
 
-// ---------- Root ----------
+// ROOT
 app.get('/', (req, res) => {
   res.send('Hello from CSV + Mongo API');
 });
 
-// ---------- CSV routes (file only) ----------
+
 
 // Get all CSV rows
 app.get('/api/csv', async (req, res) => {
@@ -172,7 +171,7 @@ app.delete('/api/csv/column', async (req, res) => {
   }
 });
 
-// ---------- Mongo routes for Values collection ----------
+
 
 // Get all Mongo Values docs
 app.get('/api/values', async (req, res) => {
@@ -206,7 +205,7 @@ app.post('/api/csv/import-to-mongo', async (req, res) => {
   }
 });
 
-// ---------- Mongo connection + server start ----------
+
 mongoose
   .connect(
     'mongodb+srv://rayaljomy_db_user:DRWGRRqDasgkvqnU@backenddb.3hhr3v4.mongodb.net/CSV-VALUES?appName=backendDB'
@@ -220,3 +219,4 @@ mongoose
   .catch(() => {
     console.log('Connection failed.');
   });
+
