@@ -18,10 +18,10 @@ Node.js Express API for CSV file operations with MongoDB integration. Supports C
 
 ```
 csv-mongodb-api/
-├── server.js              # Main Express server
+├── trial.js               # Main Express server
 ├── csvService.js          # CSV read/write utilities
 ├── models/
-│   └── values.model.js   # Mongoose schema for Values collection
+│   └── values.model.js    # Mongoose schema for Values collection
 ├── data.csv               # Sample CSV file
 ├── package.json
 ├── .gitignore
