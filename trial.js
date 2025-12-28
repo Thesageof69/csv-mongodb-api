@@ -7,19 +7,17 @@ app.use(express.json());
 const Value = require('./models/values.model');
 const { readCsv, writeCsv } = require('./csvService');
 
+
 function matchesQuery(row, query) {
   return Object.keys(query).every(key => row[key] === query[key]);
 }
 
-// ROOT
 app.get('/', (req, res) => {
   res.send('Hello from CSV + Mongo API');
 });
 
 
-
-// Get all CSV rows
-app.get('/api/csv', async (req, res) => {
+app.get('/api/csv', async (req, res) => { // Get all CSV rows
   try {
     const { rows } = await readCsv();
     res.status(200).json(rows);
@@ -28,8 +26,8 @@ app.get('/api/csv', async (req, res) => {
   }
 });
 
-// Search CSV rows
-app.get('/api/csv/search', async (req, res) => {
+
+app.get('/api/csv/search', async (req, res) => { // Search CSV rows
   try {
     const criteria = req.query;
     const { rows } = await readCsv();
@@ -45,8 +43,8 @@ app.get('/api/csv/search', async (req, res) => {
   }
 });
 
-// Update CSV rows by query
-app.put('/api/csv', async (req, res) => {
+
+app.put('/api/csv', async (req, res) => { // sync to MongoDB
   try {
     const criteria = req.query;
     const updates = req.body;
@@ -60,6 +58,7 @@ app.put('/api/csv', async (req, res) => {
     const { headers, rows } = await readCsv();
 
     let updatedCount = 0;
+    
     rows.forEach(row => {
       if (matchesQuery(row, criteria)) {
         headers.forEach(h => {
@@ -76,14 +75,38 @@ app.put('/api/csv', async (req, res) => {
     }
 
     await writeCsv(headers, rows);
-    res.status(200).json({ updatedCount, rows });
+
+  
+    try {
+  
+      await Value.deleteMany({});
+
+      if (rows.length > 0) {
+        await Value.insertMany(rows);
+      }
+
+      res.status(200).json({ 
+        updatedCount, 
+        rows, 
+        mongoSynced: true,
+        message: 'CSV updated and fully synced to MongoDB'
+      });
+    } catch (mongoError) {
+      console.log('MongoDB sync error:', mongoError.message);
+      res.status(200).json({ 
+        updatedCount, 
+        rows, 
+        mongoSynced: false,
+        warning: 'CSV updated but MongoDB sync failed: ' + mongoError.message
+      });
+    }
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
 });
 
-// Delete CSV rows by query
-app.delete('/api/csv', async (req, res) => {
+
+app.delete('/api/csv', async (req, res) => { // Delete CSV rows matching criteria
   try {
     const criteria = req.query;
 
@@ -102,14 +125,35 @@ app.delete('/api/csv', async (req, res) => {
     }
 
     await writeCsv(headers, newRows);
-    res.status(200).json({ deletedCount });
+
+    try {                   // Auto-sync to MongoDB after deletion
+      const mongoQuery = {};
+      Object.keys(criteria).forEach(key => {
+        mongoQuery[key] = criteria[key];
+      });
+
+      await Value.deleteMany(mongoQuery);
+
+      res.status(200).json({ 
+        deletedCount,
+        mongoSynced: true,
+        message: 'CSV rows deleted and synced to MongoDB'
+      });
+    } catch (mongoError) {
+      console.log('MongoDB sync error:', mongoError.message);
+      res.status(200).json({ 
+        deletedCount,
+        mongoSynced: false,
+        warning: 'CSV deleted but MongoDB sync failed'
+      });
+    }
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
 });
 
-// Add a new column
-app.post('/api/csv/column', async (req, res) => {
+
+app.post('/api/csv/column', async (req, res) => {   // Add a new column
   try {
     const { columnName, defaultValue = '' } = req.body;
 
@@ -140,8 +184,7 @@ app.post('/api/csv/column', async (req, res) => {
   }
 });
 
-// Delete a column
-app.delete('/api/csv/column', async (req, res) => {
+app.delete('/api/csv/column', async (req, res) => { // Delete a column
   try {
     const { columnName } = req.body;
 
@@ -172,8 +215,6 @@ app.delete('/api/csv/column', async (req, res) => {
 });
 
 
-
-// Get all Mongo Values docs
 app.get('/api/values', async (req, res) => {
   try {
     const docs = await Value.find({});
@@ -183,28 +224,42 @@ app.get('/api/values', async (req, res) => {
   }
 });
 
-// Import CSV rows into Mongo Values
 app.post('/api/csv/import-to-mongo', async (req, res) => {
   try {
     const { rows } = await readCsv();
 
-    const docs = rows.map(r => ({
-      col1: r.col1,
-      col2: r.col2,
-      col3: r.col3
-    }));
-
-    if (!docs.length) {
+    if (!rows.length) {
       return res.status(400).json({ message: 'No rows in CSV to import' });
     }
 
-    const result = await Value.insertMany(docs);
+    const result = await Value.insertMany(rows);
     res.status(201).json({ insertedCount: result.length, result });
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
 });
 
+app.post('/api/csv/sync-to-mongo', async (req, res) => {
+  try {
+
+    await Value.deleteMany({});
+
+    const { rows } = await readCsv();
+
+    if (!rows.length) {
+      return res.status(400).json({ message: 'No rows in CSV to sync' });
+    }
+
+    const result = await Value.insertMany(rows);
+    res.status(201).json({ 
+      message: 'MongoDB cleared and synced with CSV',
+      insertedCount: result.length, 
+      result 
+    });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+});
 
 mongoose
   .connect(
@@ -219,4 +274,3 @@ mongoose
   .catch(() => {
     console.log('Connection failed.');
   });
-
