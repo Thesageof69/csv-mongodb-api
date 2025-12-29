@@ -1,173 +1,237 @@
-# CSV-MongoDB API
+CSV-HTML-MongoDB API
 
-Node.js Express API for CSV file operations with MongoDB integration. Supports CRUD operations on CSV files and importing data to MongoDB.
+Node.js Express API for CSV file operations with HTML frontend and MongoDB integration. Supports full CRUD operations on CSV files with automatic MongoDB synchronization.
 
-## Features
+-> Features
 
--  Read and display all CSV data
--  Search/filter CSV rows by query parameters
--  Update CSV rows 
--  Delete CSV rows 
--  Add new columns to CSV
--  Delete columns from CSV
--  Import CSV data into MongoDB
--  REST API with Express.js
--  MongoDB integration with Mongoose
+- Web Interface - Clean HTML frontend to view and manage data
+- Read CSV data - Display all CSV rows in a table
+- Add new rows - Insert data via API
+- Update rows - Edit existing data inline with auto-sync
+- Delete rows - Remove data with confirmation
+- Auto-sync to MongoDB - All changes automatically reflect in MongoDB
+- REST API - Full CRUD operations via Express.js
+- MongoDB Integration - Mongoose ODM with flexible schema
 
-## Project Structure
-
+-> Project Structure
 ```
 csv-mongodb-api/
-├── trial.js               # Main Express server
-├── csvService.js          # CSV read/write utilities
+├── trial.js # Main Express server
+├── csvService.js # CSV read/write utilities
+├── index.html # Frontend interface
 ├── models/
-│   └── values.model.js    # Mongoose schema for Values collection
-├── data.csv               # Sample CSV file
+│ └── values.model.js # Mongoose schema (flexible)
+├── Data.csv # CSV data file
 ├── package.json
 ├── .gitignore
 └── README.md
+
 ```
 
-## Installation
+-> Installation
 
-### 1. Clone the repository
+->> 1. Clone the repository
 
-```bash
+```
 git clone https://github.com/Thesageof69/csv-mongodb-api.git
 cd csv-mongodb-api
 ```
 
-### 2. Install dependencies
+->> 2. Install dependencies
 
-```bash
+```
 npm install
 ```
 
-### 3. Configure MongoDB
+Required packages:
+- express
+- mongoose
+- cors
 
-Open `server.js` and replace the MongoDB connection string with your own:
+```
+npm install express mongoose cors
+```
 
-```javascript
+->> 3. Configure MongoDB
+
+Open `trial.js` and replace the MongoDB connection string with your own:
+
+```
 mongoose.connect(
   'mongodb+srv://YOUR_USERNAME:YOUR_PASSWORD@YOUR_CLUSTER.mongodb.net/CSV-VALUES?appName=backendDB'
 )
 ```
 
-### 4. Run the server
+->> 4. Run the server
 
-```bash
+```
 npm start
 ```
 
 For development with auto-reload:
 
-```bash
+```
 npm run dev
 ```
 
 The server will start on `http://localhost:4000`
 
-## API Endpoints
+->> Usage
 
-### CSV Operations (File)
+->> Web Interface
 
-#### Get all CSV rows
-```http
+1. Open your browser and go to `http://localhost:4000`
+2. View all CSV data in a clean table format
+3. Click Refresh to reload data
+4. Click Edit on any row to modify data inline
+5. Click Delete to remove a row (with confirmation)
+6. All changes automatically sync to MongoDB
+
+->> API Endpoints
+
+->> Get all CSV rows
+
+```
 GET /api/csv
 ```
 
-#### Search CSV rows
-```http
-GET /api/csv/search?col1=Pancakes
+->> Search CSV rows
+```
+GET /api/csv/search?Name=Milan
 ```
 
-#### Update CSV rows
-```http
-PUT /api/csv?col1=Pancakes
+->> Update CSV rows
+```
+PUT /api/csv?Name=Milan
 Content-Type: application/json
 
 {
-  "col2": "15",
-  "col3": "5.99"
+  "age": "30",
+  "Place": "Kochi"
 }
 ```
 
-#### Delete CSV rows
-```http
-DELETE /api/csv?col1=Pancakes
+->> Delete CSV rows
+```
+DELETE /api/csv?Name=Jack
 ```
 
-#### Add a new column
-```http
+->> Add a new column
+```
 POST /api/csv/column
 Content-Type: application/json
 
 {
-  "columnName": "name",
-  "defaultValue": "Product"
+  "Name": "name",
+  "age": "age",
+  "Place":"Place"
 }
 ```
 
-#### Delete a column
+->> Delete a column
 ```http
-DELETE /api/csv/column
+DELETE /api/csv?Name=Milan
 Content-Type: application/json
 
 {
-  "columnName": "name"
+
+  "message": "Rows deleted and synced to MongoDB",
+  "deletedCount": 1
+
 }
 ```
 
-### MongoDB Operations
+-> MongoDB Operations
 
-#### Get all MongoDB documents
+->> Get all MongoDB documents
 ```http
 GET /api/values
 ```
 
-#### Import CSV to MongoDB
+->> Import CSV to MongoDB
 ```http
 POST /api/csv/import-to-mongo
 ```
 
-## Example Usage with Insomnia/Postman
+-> Example Usage with Insomnia/Postman
 
-### 1. View all CSV data
+->> 1. View all CSV data
 - Method: `GET`
 - URL: `http://localhost:4000/api/csv`
 
-### 2. Update a row
+->> 2. Update a row
 - Method: `PUT`
-- URL: `http://localhost:4000/api/csv?col1=Pizza`
+- URL: `http://localhost:4000/api/csv?Name=Jack`
 - Body (JSON):
   ```json
   {
-    "col2": "25",
-    "col3": "9.99"
+    "age": "15",
+    "Place": "Cardiff"
   }
   ```
+  
+->> 3. Delete a person
+- Method: `DELETE`
+- URL: `http://localhost:4000/api/csv?Name=Jack`
 
-### 3. Import to MongoDB
+->> 4. Manual sync to MongoDB
 - Method: `POST`
-- URL: `http://localhost:4000/api/csv/import-to-mongo`
-- No body needed
+- URL:`http://localhost:4000/api/csv/sync-to-mongo`
 
-### 4. View MongoDB data
-- Method: `GET`
-- URL: `http://localhost:4000/api/values`
+-> Key Features
 
-## Technologies Used
+->> Automatic MongoDB Sync
+All POST, PUT, and DELETE operations automatically sync to MongoDB. No manual sync needed.
 
-- **Node.js** - JavaScript runtime
-- **Express.js** - Web framework
-- **Mongoose** - MongoDB ODM
-- **MongoDB Atlas** - Cloud database
-- **File System (fs)** - CSV file operations
+->> Flexible Schema
+The MongoDB schema uses `{ strict: false }` to accept any CSV columns dynamically.
 
-## License
+
+-> CSV Service
+Handles reading and writing CSV files with proper formatting:
+```
+const { readCsv, writeCsv } = require('./csvService');
+```
+
+-> Technologies Used
+
+- Node.js - JavaScript runtime
+- Express.js - Web framework
+- Mongoose - MongoDB ODM
+- MongoDB Atlas - Cloud database
+- CORS - Cross-origin resource sharing
+- File System (fs) - CSV file operations
+- HTML/CSS/JavaScript - Frontend interface
+
+-> File Structure Details
+
+->> trial.js
+Main Express server with all API routes and MongoDB connection.
+
+->> csvService.js
+Utility functions for reading and writing CSV files with clean line ending handling.
+
+->> index.html
+Simple, clean frontend interface with:
+- Data table display
+- Inline row editing
+- Delete with confirmation
+- Real-time status messages
+
+->> values.model.js
+Flexible Mongoose schema that accepts dynamic fields from CSV.
+
+--> Error Handling
+
+All endpoints include proper error handling:
+- 400 - Bad Request (missing parameters)
+- 404 - Not Found (no matching rows)
+- 500 - Internal Server Error
+
+-> License
 
 MIT
 
-## Author
+-> Author
 
 Thesageof69
