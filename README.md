@@ -20,7 +20,7 @@ csv-mongodb-api/
 ├── csvService.js # CSV read/write utilities
 ├── index.html # Frontend interface
 ├── models/
-│ └── values.model.js # Mongoose schema (flexible)
+│ └── values.model.js # Mongoose schema 
 ├── Data.csv # CSV data file
 ├── package.json
 ├── .gitignore
